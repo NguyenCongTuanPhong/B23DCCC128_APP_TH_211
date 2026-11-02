@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,6 +15,7 @@ import { Badge } from '../../components/Badge';
 import { CommonHeader } from '../../components/CommonHeader';
 import { EditProfileModal } from '../../components/EditProfileModal';
 import { Icon } from '../../components/Icon';
+import { BASE_URL } from '../../config';
 import { useStudent } from '../../context/StudentContext';
 import { RootStackParamList } from '../../navigation/types';
 import { Colors } from '../../theme/colors';
@@ -21,12 +24,34 @@ type ProfileNavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileNavProp>();
-  const { student, updateStudentProfile, resetToDefaults } = useStudent();
+  const {
+    student,
+    updateStudentProfile,
+    resetToDefaults,
+    isOnline,
+    isSyncing,
+    pendingSyncCount,
+    syncOfflineQueue,
+    refreshData,
+    lastSyncTime,
+  } = useStudent();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshData(true);
+    setIsRefreshing(false);
+  };
 
   const handleSaveProfile = async (name: string, email: string, phone: string) => {
     await updateStudentProfile({ name, email, phone });
-    Alert.alert('Thành công', 'Thông tin sinh viên đã được cập nhật!');
+    Alert.alert(
+      'Thành công',
+      isOnline
+        ? 'Thông tin sinh viên đã được lưu lên máy chủ!'
+        : 'Đang offline. Thay đổi đã lưu cục bộ và sẽ tự đồng bộ khi có mạng!',
+    );
   };
 
   const handleResetData = () => {
@@ -60,7 +85,16 @@ export const ProfileScreen: React.FC = () => {
         }}
       />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={[Colors.primary]}
+          />
+        }>
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatarRow}>
@@ -181,6 +215,70 @@ export const ProfileScreen: React.FC = () => {
             <Text style={styles.viewDetailBtnText}>Xem chi tiết bảng điểm</Text>
             <Icon name="chevronRight" size={16} color={Colors.white} />
           </TouchableOpacity>
+        </View>
+
+        {/* Network & Offline Sync Status Card (TH4 Feature) */}
+        <View style={styles.syncCard}>
+          <View style={styles.syncCardHeader}>
+            <Text style={styles.syncCardTitle}>📶 Kết Nối & Đồng Bộ (Offline Mode)</Text>
+            <Badge
+              label={isOnline ? 'Online' : 'Offline'}
+              variant={isOnline ? 'success' : 'danger'}
+              size="small"
+            />
+          </View>
+
+          <View style={styles.syncRow}>
+            <Text style={styles.syncLabel}>Máy chủ API:</Text>
+            <Text style={styles.syncValue}>{BASE_URL}</Text>
+          </View>
+
+          <View style={styles.syncRow}>
+            <Text style={styles.syncLabel}>Hàng đợi Offline:</Text>
+            <Text
+              style={[
+                styles.syncValue,
+                pendingSyncCount > 0 && styles.syncValuePending,
+              ]}>
+              {pendingSyncCount > 0
+                ? `${pendingSyncCount} thao tác đang chờ gửi`
+                : 'Đã đồng bộ đầy đủ'}
+            </Text>
+          </View>
+
+          {lastSyncTime && (
+            <View style={styles.syncRow}>
+              <Text style={styles.syncLabel}>Lần đồng bộ gần nhất:</Text>
+              <Text style={styles.syncValue}>
+                {lastSyncTime.toLocaleTimeString('vi-VN')}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.syncBtnRow}>
+            <TouchableOpacity
+              style={[
+                styles.syncActionBtn,
+                (!isOnline || pendingSyncCount === 0 || isSyncing) &&
+                  styles.syncActionBtnDisabled,
+              ]}
+              disabled={!isOnline || pendingSyncCount === 0 || isSyncing}
+              onPress={syncOfflineQueue}>
+              {isSyncing ? (
+                <ActivityIndicator size="small" color={Colors.white} />
+              ) : (
+                <Text style={styles.syncActionBtnText}>
+                  🔄 Đồng bộ ngay ({pendingSyncCount})
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.refreshServerBtn}
+              onPress={() => refreshData()}>
+              <Text style={styles.refreshServerBtnText}>Tải lại từ Server</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Utility Reset Data */}
@@ -472,5 +570,91 @@ const styles = StyleSheet.create({
   resetBtnText: {
     fontSize: 12,
     color: Colors.textMuted,
+  },
+  syncCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    elevation: 2,
+    shadowColor: Colors.shadowColor,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+  },
+  syncCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.divider,
+    paddingBottom: 10,
+  },
+  syncCardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  syncRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  syncLabel: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  syncValue: {
+    fontSize: 13,
+    color: Colors.textPrimary,
+    fontWeight: '600',
+  },
+  syncValuePending: {
+    color: Colors.warning,
+    fontWeight: '700',
+  },
+  syncBtnRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: Colors.divider,
+  },
+  syncActionBtn: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  syncActionBtnDisabled: {
+    backgroundColor: Colors.divider,
+  },
+  syncActionBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  refreshServerBtn: {
+    flex: 1,
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  refreshServerBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.textSecondary,
   },
 });

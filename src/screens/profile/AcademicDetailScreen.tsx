@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -19,10 +20,20 @@ type AcademicNavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const AcademicDetailScreen: React.FC = () => {
   const navigation = useNavigation<AcademicNavProp>();
-  const { student, grades } = useStudent();
+  const { student, grades, refreshData } = useStudent();
   const [selectedSemester, setSelectedSemester] = useState<string>('all');
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
-  const semesters = ['all', '2024.1', '2023.2', '2023.1'];
+  const semesters = useMemo(() => {
+    const sems = Array.from(new Set(grades.map(g => g.semester).filter(Boolean)));
+    return ['all', ...sems];
+  }, [grades]);
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshData(true);
+    setIsRefreshing(false);
+  };
 
   const filteredGrades =
     selectedSemester === 'all'
@@ -141,10 +152,17 @@ export const AcademicDetailScreen: React.FC = () => {
       {/* Grades List */}
       <FlatList
         data={filteredGrades}
-        keyExtractor={item => item.id}
+        keyExtractor={item => String(item.id)}
         renderItem={renderGradeCard}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={[Colors.primary]}
+          />
+        }
       />
     </View>
   );

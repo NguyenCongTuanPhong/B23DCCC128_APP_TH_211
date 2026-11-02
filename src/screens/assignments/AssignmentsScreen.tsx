@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -8,6 +10,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AddAssignmentModal } from '../../components/AddAssignmentModal';
 import { Badge } from '../../components/Badge';
 import { CommonHeader } from '../../components/CommonHeader';
 import { EmptyState } from '../../components/EmptyState';
@@ -23,8 +26,16 @@ type FilterType = 'all' | 'pending' | 'submitted' | 'graded';
 
 export const AssignmentsScreen: React.FC = () => {
   const navigation = useNavigation<AssignmentsNavProp>();
-  const { assignments, toggleAssignmentStatus } = useStudent();
+  const { assignments, toggleAssignmentStatus, isLoading, refreshData } = useStudent();
   const [filter, setFilter] = useState<FilterType>('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshData(true);
+    setIsRefreshing(false);
+  };
 
   // Filtered list
   const filteredAssignments = useMemo(() => {
@@ -32,15 +43,15 @@ export const AssignmentsScreen: React.FC = () => {
     return assignments.filter(a => a.status === filter);
   }, [assignments, filter]);
 
-  const pendingCount = assignments.filter(a => a.status === 'pending').length;
-  const submittedCount = assignments.filter(a => a.status === 'submitted').length;
+  const pendingCount = assignments.filter(a => a.status === 'pending' || a.status === 'todo').length;
+  const submittedCount = assignments.filter(a => a.status === 'submitted' || a.status === 'done').length;
   const gradedCount = assignments.filter(a => a.status === 'graded').length;
   const processedCount = submittedCount + gradedCount;
   const progressPercent = assignments.length > 0 ? (processedCount / assignments.length) * 100 : 0;
 
   const renderAssignmentCard = ({ item }: { item: Assignment }) => {
-    const isPending = item.status === 'pending';
-    const isSubmitted = item.status === 'submitted';
+    const isPending = item.status === 'pending' || item.status === 'todo';
+    const isSubmitted = item.status === 'submitted' || item.status === 'done';
     const isGraded = item.status === 'graded';
 
     const getStatusBadge = () => {
@@ -69,8 +80,8 @@ export const AssignmentsScreen: React.FC = () => {
       <TouchableOpacity
         style={[styles.card, !isPending && styles.cardCompleted]}
         activeOpacity={0.8}
-        onPress={() => navigation.navigate('AssignmentDetail', { assignmentId: item.id })}>
-        {/* Checkbox toggle */}
+        onPress={() => navigation.navigate('AssignmentDetail', { assignmentId: String(item.id) })}>
+        {/* Checkbox toggle (PATCH /assignments/:id) */}
         <TouchableOpacity
           style={styles.checkboxTouchable}
           onPress={() => toggleAssignmentStatus(item.id)}
@@ -103,7 +114,7 @@ export const AssignmentsScreen: React.FC = () => {
           <View style={styles.bottomRow}>
             <View style={styles.timeRow}>
               <Icon name="clock" size={12} color={Colors.textMuted} />
-              <Text style={styles.timeText}>Trước {item.dueTime}</Text>
+              <Text style={styles.timeText}>Trước {item.dueTime || '23:59'}</Text>
             </View>
 
             <View style={styles.statusAction}>
@@ -132,7 +143,11 @@ export const AssignmentsScreen: React.FC = () => {
     <View style={styles.container}>
       <CommonHeader
         title="Danh Sách Bài Tập"
-        subtitle={`${processedCount}/${assignments.length} bài đã nộp & được chấm`}
+        subtitle={`${processedCount}/${assignments.length} bài đã hoàn thành`}
+        rightAction={{
+          icon: '➕',
+          onPress: () => setIsAddModalVisible(true),
+        }}
       />
 
       {/* Progress & Summary Bar */}
@@ -145,7 +160,7 @@ export const AssignmentsScreen: React.FC = () => {
           <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
         </View>
 
-        {/* Filter Tabs: Tất cả, Cần nộp, Đã nộp, Đã chấm */}
+        {/* Filter Tabs */}
         <View style={styles.filterTabs}>
           <TouchableOpacity
             style={[styles.tabBtn, filter === 'all' && styles.tabBtnActive]}
@@ -179,29 +194,59 @@ export const AssignmentsScreen: React.FC = () => {
       </View>
 
       {/* Assignments List */}
-      <FlatList
-        data={filteredAssignments}
-        keyExtractor={item => item.id}
-        renderItem={renderAssignmentCard}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <EmptyState
-            icon={filter === 'pending' ? '🎉' : '📋'}
-            title={
-              filter === 'pending'
-                ? 'Không còn bài tập cần nộp'
-                : filter === 'submitted'
-                ? 'Chưa có bài tập nào đã nộp'
-                : filter === 'graded'
-                ? 'Chưa có bài tập nào được chấm'
-                : 'Chưa có bài tập'
-            }
-            message="Bạn có thể kiểm tra các danh mục khác hoặc cập nhật trạng thái bài tập."
-            actionText={filter !== 'all' ? 'Xem tất cả bài tập' : undefined}
-            onAction={() => setFilter('all')}
-          />
-        }
+      {isLoading && assignments.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Đang tải bài tập từ máy chủ...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredAssignments}
+          keyExtractor={item => String(item.id)}
+          renderItem={renderAssignmentCard}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={onRefresh}
+              colors={[Colors.primary]}
+            />
+          }
+          ListEmptyComponent={
+            <EmptyState
+              icon={filter === 'pending' ? '🎉' : '📋'}
+              title={
+                filter === 'pending'
+                  ? 'Không còn bài tập cần nộp'
+                  : filter === 'submitted'
+                  ? 'Chưa có bài tập nào đã nộp'
+                  : filter === 'graded'
+                  ? 'Chưa có bài tập nào được chấm'
+                  : 'Chưa có bài tập'
+              }
+              message="Bạn có thể bấm nút (+) ở góc trên hoặc góc dưới để thêm bài tập mới (POST /assignments)."
+              actionText={filter !== 'all' ? 'Xem tất cả bài tập' : 'Thêm bài tập mới'}
+              onAction={() =>
+                filter !== 'all' ? setFilter('all') : setIsAddModalVisible(true)
+              }
+            />
+          }
+        />
+      )}
+
+      {/* Floating Action Button (FAB) */}
+      <TouchableOpacity
+        style={styles.fab}
+        activeOpacity={0.85}
+        onPress={() => setIsAddModalVisible(true)}>
+        <Text style={styles.fabIcon}>＋</Text>
+      </TouchableOpacity>
+
+      {/* Modal thêm bài tập mới (POST /assignments) */}
+      <AddAssignmentModal
+        visible={isAddModalVisible}
+        onClose={() => setIsAddModalVisible(false)}
       />
     </View>
   );
@@ -211,6 +256,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontWeight: '500',
   },
   summaryCard: {
     backgroundColor: Colors.white,
@@ -255,15 +312,13 @@ const styles = StyleSheet.create({
   tabBtn: {
     flex: 1,
     paddingVertical: 7,
-    borderRadius: 10,
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderRadius: 8,
+    backgroundColor: Colors.divider,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   tabBtnActive: {
     backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
   },
   tabBtnText: {
     fontSize: 11,
@@ -276,12 +331,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 28,
+    paddingBottom: 80,
   },
   card: {
     flexDirection: 'row',
     backgroundColor: Colors.white,
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
@@ -289,13 +344,13 @@ const styles = StyleSheet.create({
     shadowColor: Colors.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowRadius: 6,
     elevation: 2,
-    alignItems: 'flex-start',
   },
   cardCompleted: {
+    backgroundColor: '#F8FAFC',
+    borderColor: Colors.divider,
     opacity: 0.9,
-    backgroundColor: '#FAFAFA',
   },
   checkboxTouchable: {
     paddingRight: 12,
@@ -386,5 +441,27 @@ const styles = StyleSheet.create({
   },
   statusTextGraded: {
     color: Colors.success,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+  },
+  fabIcon: {
+    fontSize: 28,
+    color: Colors.white,
+    lineHeight: 32,
+    fontWeight: '300',
   },
 });

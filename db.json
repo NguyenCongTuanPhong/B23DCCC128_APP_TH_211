@@ -1,0 +1,274 @@
+{
+  "students": [
+    {
+      "id": 1,
+      "studentCode": "B23DCCC040",
+      "fullName": "Nguyen Cong Tuan Phong",
+      "className": "CNTT-K21A",
+      "major": "Công nghệ thông tin",
+      "email": "phong.b23dccc128@stu.ptit.edu.vn",
+      "phone": "0912345678",
+      "updatedAt": "2026-10-20T08:00:00Z"
+    },
+    {
+      "id": 2,
+      "studentCode": "SV2021002",
+      "fullName": "Trần Thị Bích",
+      "className": "CNTT-K21A",
+      "major": "Công nghệ thông tin",
+      "email": "bich.tt@student.edu.vn",
+      "phone": "0987654321",
+      "updatedAt": "2026-10-20T08:00:00Z"
+    },
+    {
+      "id": 3,
+      "studentCode": "SV2021003",
+      "fullName": "Lê Hoàng Nam",
+      "className": "CNTT-K21B",
+      "major": "Công nghệ thông tin",
+      "email": "nam.lh@student.edu.vn",
+      "phone": "0934567890",
+      "updatedAt": "2026-10-20T08:00:00Z"
+    },
+    {
+      "id": 4,
+      "studentCode": "SV2021004",
+      "fullName": "Phạm Mai Anh",
+      "className": "ATTT-K21A",
+      "major": "An toàn thông tin",
+      "email": "anh.pm@student.edu.vn",
+      "phone": "0945678901",
+      "updatedAt": "2026-10-20T08:00:00Z"
+    },
+    {
+      "id": 5,
+      "studentCode": "SV2021005",
+      "fullName": "Vũ Đình Trọng",
+      "className": "DTVT-K21A",
+      "major": "Điện tử viễn thông",
+      "email": "trong.vd@student.edu.vn",
+      "phone": "0956789012",
+      "updatedAt": "2026-10-20T08:00:00Z"
+    }
+  ],
+  "courses": [
+    {
+      "id": 1,
+      "code": "INT3120",
+      "name": "Phát triển ứng dụng di động",
+      "credits": 3,
+      "lecturer": "TS. Trần Minh",
+      "description": "Lập trình ứng dụng di động đa nền tảng với React Native.",
+      "semester": "HK1 2026-2027"
+    },
+    {
+      "id": 2,
+      "code": "INT1340",
+      "name": "Mạng máy tính & Truyền thông",
+      "credits": 3,
+      "lecturer": "PGS. TS. Lê Hải Đăng",
+      "description": "Mô hình OSI, giao thức TCP/IP, định tuyến mạng và lập trình socket.",
+      "semester": "HK1 2026-2027"
+    },
+    {
+      "id": 3,
+      "code": "INT1332",
+      "name": "Cơ sở dữ liệu nâng cao",
+      "credits": 3,
+      "lecturer": "TS. Nguyễn Thị Mai",
+      "description": "Tối ưu hóa câu truy vấn SQL, Indexing, Transaction ACID và NoSQL.",
+      "semester": "HK1 2026-2027"
+    },
+    {
+      "id": 4,
+      "code": "INT1410",
+      "name": "Trí tuệ nhân tạo",
+      "credits": 3,
+      "lecturer": "TS. Vũ Đình Khoa",
+      "description": "Giải thuật tìm kiếm không gian trạng thái, heuristic A*, Minimax và Machine Learning.",
+      "semester": "HK1 2026-2027"
+    },
+    {
+      "id": 5,
+      "code": "INT1408",
+      "name": "Kiến trúc phần mềm",
+      "credits": 2,
+      "lecturer": "ThS. Hoàng Quốc Bảo",
+      "description": "Mẫu thiết kế (GoF), Clean Architecture, Microservices và chuẩn chất lượng mã nguồn.",
+      "semester": "HK1 2026-2027"
+    },
+    {
+      "id": 6,
+      "code": "BAS1224",
+      "name": "Khởi nghiệp & Đổi mới sáng tạo",
+      "credits": 2,
+      "lecturer": "TS. Phạm Thanh Nga",
+      "description": "Tư duy khởi nghiệp, xây dựng mô hình Canvas và thuyết trình gọi vốn.",
+      "semester": "HK1 2026-2027"
+    }
+  ],
+  "sessions": [
+    {
+      "id": 1,
+      "courseId": 1,
+      "dayOfWeek": 2,
+      "startTime": "07:00",
+      "endTime": "09:30",
+      "room": "P.301-A2",
+      "note": "Mang laptop đã cài môi trường React Native"
+    },
+    {
+      "id": 2,
+      "courseId": 1,
+      "dayOfWeek": 2,
+      "startTime": "09:45",
+      "endTime": "11:45",
+      "room": "Lab 5-A2",
+      "note": "Thực hành React Native Hooks & REST API"
+    },
+    {
+      "id": 3,
+      "courseId": 2,
+      "dayOfWeek": 3,
+      "startTime": "08:00",
+      "endTime": "10:30",
+      "room": "P.204-TC",
+      "note": "Kiểm tra 15 phút bài giảng TCP/IP Subnetting"
+    },
+    {
+      "id": 4,
+      "courseId": 3,
+      "dayOfWeek": 4,
+      "startTime": "13:00",
+      "endTime": "15:30",
+      "room": "P.102-B1",
+      "note": "Thảo luận Indexing và B-Tree Execution Plan"
+    },
+    {
+      "id": 5,
+      "courseId": 4,
+      "dayOfWeek": 5,
+      "startTime": "15:00",
+      "endTime": "17:30",
+      "room": "P.501-D3",
+      "note": "Báo cáo tiến độ đồ án tìm kiếm A*"
+    },
+    {
+      "id": 6,
+      "courseId": 5,
+      "dayOfWeek": 6,
+      "startTime": "07:00",
+      "endTime": "08:45",
+      "room": "P.405-D9",
+      "note": "Nộp sơ đồ UML kiến trúc hệ thống"
+    }
+  ],
+  "assignments": [
+    {
+      "id": 1,
+      "courseId": 1,
+      "title": "Thực hành 4: API & Offline",
+      "description": "Kết nối API và hỗ trợ chế độ offline.",
+      "dueDate": "2026-11-09T23:59:00Z",
+      "status": "todo",
+      "updatedAt": "2026-10-26T08:00:00Z"
+    },
+    {
+      "id": 2,
+      "courseId": 1,
+      "title": "Thực hành 3: Navigation & State",
+      "description": "Xây dựng giao diện ứng dụng với Bottom Tab và Stack Navigation.",
+      "dueDate": "2026-10-24T23:59:00Z",
+      "status": "done",
+      "updatedAt": "2026-10-25T10:00:00Z"
+    },
+    {
+      "id": 3,
+      "courseId": 2,
+      "title": "Mô phỏng Socket TCP Client/Server",
+      "description": "Lập trình ứng dụng truyền nhận file qua giao thức Socket TCP.",
+      "dueDate": "2026-11-15T23:59:00Z",
+      "status": "done",
+      "updatedAt": "2026-11-02T08:20:47.380Z"
+    },
+    {
+      "id": 4,
+      "courseId": 3,
+      "title": "Tối ưu câu truy vấn cơ sở dữ liệu",
+      "description": "Phân tích kế hoạch thực thi (Execution Plan) và đánh chỉ mục bảng 1 triệu dòng.",
+      "dueDate": "2026-11-20T23:59:00Z",
+      "status": "todo",
+      "updatedAt": "2026-10-29T14:00:00Z"
+    },
+    {
+      "id": 5,
+      "courseId": 4,
+      "title": "Cài đặt thuật toán tìm kiếm Heuristic A*",
+      "description": "Viết mã nguồn tìm đường đi ngắn nhất trên đồ thị không gian trạng thái.",
+      "dueDate": "2026-11-05T23:59:00Z",
+      "status": "done",
+      "updatedAt": "2026-11-01T16:00:00Z"
+    },
+    {
+      "id": 6,
+      "courseId": 5,
+      "title": "Thiết kế kiến trúc hệ thống E-commerce",
+      "description": "Vẽ biểu đồ lớp Class Diagram và áp dụng kiến trúc Clean Architecture.",
+      "dueDate": "2026-11-25T23:59:00Z",
+      "status": "todo",
+      "updatedAt": "2026-10-30T11:00:00Z"
+    }
+  ],
+  "grades": [
+    {
+      "id": 1,
+      "courseId": 1,
+      "semester": "HK1 2026-2027",
+      "attendance": 9,
+      "midterm": 7.5,
+      "final": 8.5,
+      "total": 8.25,
+      "letter": "B+"
+    },
+    {
+      "id": 2,
+      "courseId": 2,
+      "semester": "HK1 2026-2027",
+      "attendance": 10,
+      "midterm": 8.5,
+      "final": 9,
+      "total": 8.95,
+      "letter": "A"
+    },
+    {
+      "id": 3,
+      "courseId": 3,
+      "semester": "HK1 2026-2027",
+      "attendance": 8.5,
+      "midterm": 8,
+      "final": 8,
+      "total": 8.05,
+      "letter": "B+"
+    },
+    {
+      "id": 4,
+      "courseId": 4,
+      "semester": "HK1 2026-2027",
+      "attendance": 9.5,
+      "midterm": 9,
+      "final": 9,
+      "total": 9.05,
+      "letter": "A"
+    },
+    {
+      "id": 5,
+      "courseId": 5,
+      "semester": "HK1 2026-2027",
+      "attendance": 8,
+      "midterm": 7,
+      "final": 7.5,
+      "total": 7.35,
+      "letter": "B"
+    }
+  ]
+}

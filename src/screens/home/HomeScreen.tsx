@@ -23,13 +23,20 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const { student, subjects, assignments, toggleAssignmentStatus } = useStudent();
+  const {
+    student,
+    subjects,
+    assignments,
+    toggleAssignmentStatus,
+    refreshData,
+  } = useStudent();
   const [refreshing, setRefreshing] = React.useState(false);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 500);
-  }, []);
+    await refreshData(true);
+    setRefreshing(false);
+  }, [refreshData]);
 
   // Filter assignments by status: cần nộp, đã nộp, đã chấm
   const pendingAssignments = assignments.filter(a => a.status === 'pending');
@@ -135,7 +142,7 @@ export const HomeScreen: React.FC = () => {
           horizontal
           showsHorizontalScrollIndicator={false}
           data={subjects}
-          keyExtractor={item => item.id}
+          keyExtractor={item => String(item.id)}
           contentContainerStyle={styles.subjectsHorizontalList}
           renderItem={({ item }: { item: Subject }) => (
             <TouchableOpacity
@@ -192,11 +199,11 @@ export const HomeScreen: React.FC = () => {
         ) : (
           upcomingAssignments.map((assignment: Assignment) => (
             <TouchableOpacity
-              key={assignment.id}
+              key={String(assignment.id)}
               style={styles.assignmentCard}
               activeOpacity={0.85}
               onPress={() =>
-                navigation.navigate('AssignmentDetail', { assignmentId: assignment.id })
+                navigation.navigate('AssignmentDetail', { assignmentId: String(assignment.id) })
               }>
               <TouchableOpacity
                 style={styles.checkboxTouch}

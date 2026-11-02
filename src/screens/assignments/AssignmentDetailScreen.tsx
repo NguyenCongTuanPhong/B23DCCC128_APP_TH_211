@@ -24,7 +24,7 @@ export const AssignmentDetailScreen: React.FC = () => {
   const { assignmentId } = route.params;
   const { assignments, toggleAssignmentStatus, subjects } = useStudent();
 
-  const assignment = assignments.find(a => a.id === assignmentId);
+  const assignment = assignments.find(a => String(a.id) === String(assignmentId));
 
   if (!assignment) {
     return (

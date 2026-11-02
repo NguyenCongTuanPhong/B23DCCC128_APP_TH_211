@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   FlatList,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -32,8 +33,15 @@ const DAYS = [
 
 export const ScheduleScreen: React.FC = () => {
   const navigation = useNavigation<ScheduleNavProp>();
-  const { schedules } = useStudent();
+  const { schedules, refreshData } = useStudent();
   const [selectedDay, setSelectedDay] = useState<number>(2); // Default to Monday
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshData(true);
+    setIsRefreshing(false);
+  };
 
   // Filter schedules for the selected day
   const dailySchedules = useMemo(() => {
@@ -55,7 +63,7 @@ export const ScheduleScreen: React.FC = () => {
         {/* Top row: Type & Time */}
         <View style={styles.topRow}>
           <Badge
-            label={item.type}
+            label={item.type || 'Lý thuyết'}
             variant={item.type === 'Thực hành' ? 'info' : 'primary'}
             size="small"
           />
@@ -139,10 +147,17 @@ export const ScheduleScreen: React.FC = () => {
       {/* Class Sessions List */}
       <FlatList
         data={dailySchedules}
-        keyExtractor={item => item.id}
+        keyExtractor={item => String(item.id)}
         renderItem={renderScheduleCard}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={[Colors.primary]}
+          />
+        }
         ListEmptyComponent={
           <EmptyState
             icon="☕"

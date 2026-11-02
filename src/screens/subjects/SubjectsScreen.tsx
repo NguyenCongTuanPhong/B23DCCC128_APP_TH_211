@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -22,9 +23,16 @@ type SubjectsScreenNavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const SubjectsScreen: React.FC = () => {
   const navigation = useNavigation<SubjectsScreenNavProp>();
-  const { subjects } = useStudent();
+  const { subjects, refreshData } = useStudent();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | '2' | '3'>('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshData(true);
+    setIsRefreshing(false);
+  };
 
   // Filter subjects by search query (name or code) & credits
   const filteredSubjects = useMemo(() => {
@@ -146,10 +154,17 @@ export const SubjectsScreen: React.FC = () => {
 
       <FlatList
         data={filteredSubjects}
-        keyExtractor={item => item.id}
+        keyExtractor={item => String(item.id)}
         renderItem={renderSubjectItem}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={[Colors.primary]}
+          />
+        }
         ListEmptyComponent={
           <EmptyState
             icon="🔍"

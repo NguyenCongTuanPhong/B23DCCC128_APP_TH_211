@@ -42,7 +42,7 @@ export const ScheduleDetailScreen: React.FC = () => {
 
           <View style={styles.badgeRow}>
             <Badge
-              label={schedule.type}
+              label={schedule.type || 'Lý thuyết'}
               variant={schedule.type === 'Thực hành' ? 'info' : 'primary'}
               size="medium"
             />

@@ -26,7 +26,9 @@ export const SubjectDetailScreen: React.FC = () => {
   const { assignments } = useStudent();
 
   // Find assignments for this subject
-  const subjectAssignments = assignments.filter(a => a.subjectId === subject.id);
+  const subjectAssignments = assignments.filter(
+    a => String(a.subjectId) === String(subject.id) || String(a.courseId) === String(subject.id),
+  );
 
   return (
     <View style={styles.container}>
@@ -107,11 +109,11 @@ export const SubjectDetailScreen: React.FC = () => {
           ) : (
             subjectAssignments.map((assignment: Assignment) => (
               <TouchableOpacity
-                key={assignment.id}
+                key={String(assignment.id)}
                 style={styles.assignmentItem}
                 activeOpacity={0.8}
                 onPress={() =>
-                  navigation.navigate('AssignmentDetail', { assignmentId: assignment.id })
+                  navigation.navigate('AssignmentDetail', { assignmentId: String(assignment.id) })
                 }>
                 <View style={styles.assignmentItemLeft}>
                   <Text style={styles.assignmentItemTitle}>{assignment.title}</Text>
